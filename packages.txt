@@ -1,0 +1,2 @@
+# Empty or add system deps if needed for Streamlit Cloud
+# e.g. libgomp1 for sentence-transformers

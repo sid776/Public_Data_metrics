@@ -1,0 +1,7 @@
+# Streamlit config (used when hosting on Streamlit Community Cloud)
+[server]
+headless = true
+port = 8502
+
+[browser]
+gatherUsageStats = false
