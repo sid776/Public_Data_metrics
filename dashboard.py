@@ -9,14 +9,14 @@ import json
 import urllib.request
 from urllib.error import URLError, HTTPError
 
-# Rich, colorful palette for charts (vivid and distinct)
+# Muted, professional palette for charts (light and subdued)
 CHART_COLORS = [
-    "#06b6d4", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444",
-    "#ec4899", "#6366f1", "#14b8a6", "#f97316", "#84cc16",
-    "#a855f7", "#0ea5e9", "#eab308", "#22c55e", "#f43f5e",
+    "#64748b", "#475569", "#0ea5e9", "#0d9488", "#6366f1",
+    "#7c3aed", "#2563eb", "#059669", "#ca8a04", "#dc2626",
+    "#9333ea", "#0369a1", "#15803d", "#b45309", "#be123c",
 ]
-ACCENT = "#06b6d4"
-ACCENT_SOFT = "rgba(6, 182, 212, 0.12)"
+ACCENT = "#475569"
+ACCENT_SOFT = "rgba(71, 85, 105, 0.12)"
 
 # World Bank indicator catalog (id, label, unit)
 WB_INDICATORS = {
@@ -44,26 +44,28 @@ st.set_page_config(
 
 st.markdown(f"""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
-    html, body {{ background: #f8fafc; }}
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap');
+    html, body {{ background: #fafafa; }}
     .stApp {{ 
-        background: linear-gradient(165deg, #fafbfd 0%%, #f1f5f9 50%%, #eef2f7 100%%); 
-        background-image: radial-gradient(circle at 1px 1px, rgba(6,182,212,0.05) 1px, transparent 0);
-        background-size: 24px 24px;
+        background: #f5f5f5;
     }}
-    [class*="css"] {{ font-family: 'Inter', sans-serif !important; }}
-    h1, h2, h3 {{ font-family: 'Source Sans 3', sans-serif !important; font-weight: 600; color: #0f172a !important; }}
+    [class*="css"] {{ font-family: 'DM Sans', sans-serif !important; }}
+    h1, h2, h3 {{ font-family: 'Sora', sans-serif !important; font-weight: 600; color: #0f172a !important; letter-spacing: -0.02em; }}
     .futur-header {{ 
-        font-family: 'Source Sans 3', sans-serif !important; 
-        padding: 1.25rem 0 1rem 0; 
+        font-family: 'Sora', sans-serif !important; 
+        background: linear-gradient(135deg, #4c1d95 0%%, #6d28d9 50%%, #5b21b6 100%%);
+        padding: 1.25rem 1.5rem 1rem 1.5rem; 
         margin-bottom: 1.5rem; 
-        border-bottom: 2px solid {ACCENT}; 
+        border: none;
         position: relative;
+        border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(109, 40, 217, 0.35);
     }}
-    .futur-header::after {{ content: ''; position: absolute; bottom: -2px; left: 0; width: 100px; height: 2px; background: linear-gradient(90deg, {ACCENT}, transparent); opacity: 0.7; }}
-    .futur-header h1 {{ margin: 0; font-size: 1.5rem; font-weight: 700; color: #0f172a !important; }}
-    .futur-header p {{ margin: 0.25rem 0 0 0; font-family: 'Inter', sans-serif; font-size: 0.875rem; color: #64748b; }}
-    div[data-testid="stMetricValue"] {{ font-family: 'Source Sans 3', sans-serif !important; color: #0f172a !important; font-weight: 600; }}
+    .futur-header::after {{ content: ''; position: absolute; bottom: 0; left: 1.5rem; width: 80px; height: 3px; background: rgba(255,255,255,0.5); border-radius: 2px; }}
+    .futur-header h1, .futur-header h1 * {{ margin: 0; font-size: 1.5rem; font-weight: 700; color: #ffffff !important; letter-spacing: -0.02em; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }}
+    .futur-header p, .futur-header p * {{ margin: 0.25rem 0 0 0; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; color: #ffffff !important; opacity: 0.95; text-shadow: 0 1px 1px rgba(0,0,0,0.15); }}
+    .futur-header * {{ color: #ffffff !important; }}
+    div[data-testid="stMetricValue"] {{ font-family: 'Sora', sans-serif !important; color: #0f172a !important; font-weight: 600; }}
     div[data-testid="metric-container"] {{ 
         background: rgba(255,255,255,0.7); 
         backdrop-filter: blur(10px); 
@@ -74,14 +76,14 @@ st.markdown(f"""
         border-left: 3px solid {ACCENT};
     }}
     .stTabs [data-baseweb="tab-list"] {{ background: rgba(255,255,255,0.6); border-radius: 10px; padding: 4px; border: 1px solid #e2e8f0; }}
-    .stTabs [data-baseweb="tab"] {{ font-family: 'Inter', sans-serif; border-radius: 8px; }}
-    .stTabs [aria-selected="true"] {{ background: {ACCENT_SOFT} !important; color: #0369a1 !important; border: 1px solid rgba(6,182,212,0.25); }}
-    [data-testid="stSidebar"] {{ background: #f8fafc !important; border-right: 1px solid #e2e8f0; }}
-    [data-testid="stSidebar"] .stMarkdown {{ font-family: 'Inter', sans-serif !important; }}
+    .stTabs [data-baseweb="tab"] {{ font-family: 'DM Sans', sans-serif; border-radius: 8px; }}
+    .stTabs [aria-selected="true"] {{ background: {ACCENT_SOFT} !important; color: #334155 !important; border: 1px solid rgba(71,85,105,0.2); }}
+    [data-testid="stSidebar"] {{ background: #fafafa !important; border-right: 1px solid #e5e5e5; }}
+    [data-testid="stSidebar"] .stMarkdown {{ font-family: 'DM Sans', sans-serif !important; }}
     .block-container {{ padding-top: 1.5rem; }}
     hr {{ border-color: #e2e8f0; opacity: 0.6; }}
-    .stSubheader {{ font-family: 'Source Sans 3', sans-serif !important; font-size: 0.95rem !important; color: #334155 !important; }}
-    .stCaption {{ font-family: 'Inter', sans-serif !important; color: #64748b !important; }}
+    .stSubheader {{ font-family: 'Sora', sans-serif !important; font-size: 0.95rem !important; color: #334155 !important; letter-spacing: -0.01em; }}
+    .stCaption {{ font-family: 'DM Sans', sans-serif !important; color: #64748b !important; }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -220,8 +222,10 @@ live_chunks = health.get("vector_store_count", 0) if health else None
 api_status = "Live" if health else "Offline"
 
 st.markdown(
-    '<div class="futur-header"><h1>Document Intelligence Dashboard</h1>'
-    '<p>Environmental & Social · World Bank Open Data · VPU POC</p></div>',
+    '<div class="futur-header" style="background:linear-gradient(135deg,#5b21b6 0%,#7c3aed 50%,#6d28d9 100%);padding:1.25rem 1.5rem 1rem 1.5rem;margin-bottom:1.5rem;border-radius:10px;box-shadow:0 4px 14px rgba(124,58,237,0.4);">'
+    '<h1 style="margin:0;font-size:1.5rem;font-weight:700;color:#ffffff;letter-spacing:-0.02em;text-shadow:0 1px 3px rgba(0,0,0,0.3);">Document Intelligence Dashboard</h1>'
+    '<p style="margin:0.25rem 0 0 0;font-size:0.875rem;color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,0.25);">Environmental & Social · World Bank Open Data · VPU POC</p>'
+    '</div>',
     unsafe_allow_html=True,
 )
 
@@ -567,7 +571,7 @@ with tab_analysis:
         heatmap = alt.Chart(comp_melt).mark_rect().encode(
             x=alt.X("Indicator:N", title=""),
             y=alt.Y("Country:N", title=""),
-            color=alt.Color("Score:Q", scale=alt.Scale(scheme="viridis"), legend=alt.Legend(title="Score 0-1")),
+            color=alt.Color("Score:Q", scale=alt.Scale(scheme="blues"), legend=alt.Legend(title="Score 0-1")),
             tooltip=["Country", "Indicator", "Score"],
         ).properties(height=320, title="Normalized indicator scores by country")
         st.altair_chart(heatmap, use_container_width=True)
@@ -603,7 +607,7 @@ with tab_ml:
         st.altair_chart(alt.Chart(df_met).mark_bar().encode(
             x=alt.X("Metric:N", title=""),
             y=alt.Y("Value:Q", title="Score", scale=alt.Scale(domain=[0, 1])),
-            color=alt.Color("Value:Q", scale=alt.Scale(scheme="plasma"), legend=None),
+            color=alt.Color("Value:Q", scale=alt.Scale(scheme="blues"), legend=None),
         ).properties(height=280), use_container_width=True)
         st.markdown("#### Confusion matrix (retrieval relevance — simulated)")
         cm_data = []
@@ -614,7 +618,7 @@ with tab_ml:
         cm_chart = alt.Chart(df_cm).mark_rect().encode(
             x=alt.X("Predicted:N", title="Predicted"),
             y=alt.Y("Actual:N", title="Actual", sort="-y"),
-            color=alt.Color("Count:Q", scale=alt.Scale(scheme="reds"), legend=alt.Legend(title="Count")),
+            color=alt.Color("Count:Q", scale=alt.Scale(scheme="greys"), legend=alt.Legend(title="Count")),
             tooltip=["Actual", "Predicted", "Count"],
         ).properties(height=220, title="Confusion matrix (counts)")
         st.altair_chart(cm_chart, use_container_width=True)
@@ -625,7 +629,7 @@ with tab_ml:
         st.altair_chart(alt.Chart(df_feat).mark_bar().encode(
             y=alt.Y("Feature:N", sort="-x", title=""),
             x=alt.X("Importance:Q", title="Importance"),
-            color=alt.Color("Importance:Q", scale=alt.Scale(scheme="teals"), legend=None),
+            color=alt.Color("Importance:Q", scale=alt.Scale(scheme="blues"), legend=None),
         ).properties(height=300), use_container_width=True)
         st.markdown("#### Model comparison (embedding + retriever)")
         models = ["MiniLM-L6", "all-mpnet", "OpenAI ada", "E5-large", "BGE-base"]

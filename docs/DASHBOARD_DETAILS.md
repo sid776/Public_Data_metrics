@@ -2,7 +2,11 @@
 
 ## Overview
 
-The dashboard is an interactive Streamlit web app that combines **Document Intelligence POC** metrics (VPU / Environmental & Social) with **real data from the World Bank Open Data API**. It includes multiple indicators, **time-series trends**, **country rankings**, **growth-rate analysis**, **correlation** (e.g. GDP vs CO₂), and a **composite snapshot** table. It runs at **http://localhost:8502** when started via `RUN_DASHBOARD.bat` or `streamlit run dashboard.py --server.port 8502`.
+The dashboard is an interactive **Streamlit** web app that combines **Document Intelligence POC** metrics (VPU / Environmental & Social) with **real data from the World Bank Open Data API**. It provides multiple indicators, time-series trends, country rankings, growth-rate analysis, correlation (e.g. GDP vs CO₂), composite snapshot tables, heatmaps, and a dedicated **ML & DL Analytics** tab with simulated training curves and retrieval metrics.
+
+- **Run locally:** `RUN_DASHBOARD.bat` or `streamlit run dashboard.py --server.port 8502`
+- **URL:** **http://localhost:8502**
+- **Design:** Light background (`#f5f5f5`), muted chart palette (slate, blue, grey), fonts: **Sora** (headings, futuristic geometric), **DM Sans** (body, easy on the eyes).
 
 ---
 
@@ -13,9 +17,10 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 - **Base URL:** `https://api.worldbank.org/v2/`
 - **Usage:** Indicators and time series are fetched with `urllib`, cached for **1 hour** (`@st.cache_data(ttl=3600)`).
 - **Countries (default):** USA, China, India, Brazil, South Africa, Germany, United Kingdom, France, Japan, Mexico (code: `USA;CHN;IND;BRA;ZAF;DEU;GBR;FRA;JPN;MEX`).
-- **Date:** Latest single year for cross-sectional charts; range `2016:2022` for time-series and growth analysis.
+- **Date:** Latest single year (e.g. 2021) for cross-sectional charts; range `2016:2022` for time-series and growth analysis.
+- **Fallback:** If the API times out or errors, the dashboard uses built-in fallback datasets so all sections still show data.
 
-### 2. World Bank Indicators Used
+### 2. World Bank Indicators Used (full list)
 
 | Indicator ID        | Short name              | Description                                      | Unit / note                    |
 |---------------------|-------------------------|--------------------------------------------------|---------------------------------|
@@ -30,6 +35,11 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 | `SI.POV.DDAY`       | Poverty $2.15/day       | Poverty headcount ratio at $2.15/day (%)         | Social / poverty               |
 | `SG.GEN.PARL.ZS`    | Women in parliament     | Proportion of seats held by women in parliament (%) | Governance / gender        |
 | `SE.PRM.ENRR`       | Primary enrollment      | School enrollment, primary (% gross)             | Education                      |
+| `SP.POP.TOTL`       | Population              | Total population                                 | Raw count; shown in millions when large |
+| `SL.UEM.TOTL.ZS`    | Unemployment            | Unemployment (% total labor force)               | Labor                          |
+| `SH.XPD.CHEX.GD.ZS` | Health expenditure      | Health expenditure (% of GDP)                     | Health                         |
+| `SP.URB.TOTL.IN.ZS` | Urban population        | Urban population (% of total)                     | Demographics                   |
+| `IT.NET.USER.ZS`    | Internet users          | Individuals using the Internet (%)                | Digital access                 |
 
 ### 3. Time-Series Indicators (for trend and growth analysis)
 
@@ -70,7 +80,7 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 
 **Content:**
 - One **bar chart** per indicator (CO₂, Forest, Renewable, GDP, Life expectancy, Water, Sanitation, Electricity, Poverty, Women in parliament, Primary enrollment, plus Population, Unemployment, Health expenditure, Urban %, Internet).
-- Each bar chart shows **latest-year** values by country, with a **varied color palette** (cyan, purple, amber, green, red, pink, indigo, teal, orange, lime, etc.). **Stacked bar** — normalized GDP, Life expectancy, Forest (% by country).
+- Each bar chart shows **latest-year** values by country with a **muted color palette** (slate, blue, grey). **Stacked bar** — normalized GDP, Life expectancy, Forest (% by country).
 - Optional **raw data table** (e.g. CO₂) when “Show raw data tables” is enabled in the sidebar.
 
 **Data source:** World Bank API, single-year request per indicator, cached 1 hour.
@@ -110,7 +120,7 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 **5. Composite snapshot — selected indicators (latest year)**  
 - **Table:** One row per country, columns: Country, CO₂ (t/cap), Forest %, Renewable %, GDP/cap (US$), Life exp (y), Water %, Sanitation %, Women parl %.  
 - Intended for **cross-country E&S and development comparison**; higher is generally “better” except for CO₂.  
-- **Heatmap** — Country × Indicator (normalized 0–1), viridis color scheme.
+- **Heatmap** — Country × Indicator (normalized 0–1); color scheme: blues. Rows = country, columns = indicator; helps spot strengths/weaknesses at a glance.
 
 **Data source:** World Bank single-year data for the listed indicators; merged by country in the dashboard.
 
@@ -120,7 +130,13 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 
 **Purpose:** ML/DL metrics for the RAG/embedding and retrieval pipeline (simulated for POC).
 
-**Content:** Training & validation curves (loss/accuracy vs epoch); classification metrics bar (Precision@5, Recall@5, F1@5, MRR, NDCG@10, Hit rate); confusion matrix heatmap; feature importance (embedding dimensions); model comparison scatter (accuracy vs latency); KPIs (Best F1@5, inference ms, embedding dim, drift score).
+**Content (all simulated for POC):**
+- **Training & validation curves** — Line chart: epoch (1–20) vs value for Train loss, Val loss, Train accuracy, Val accuracy.
+- **Classification metrics** — Bar chart: Precision@5, Recall@5, F1@5, MRR, NDCG@10, Hit rate (retrieval quality); color scheme blues.
+- **Confusion matrix** — Heatmap: Actual (Relevant / Not relevant) vs Predicted (Retrieved / Not retrieved) with counts; greys scheme.
+- **Feature importance** — Horizontal bar chart: embedding dimensions Dim_1 … Dim_10 vs importance; blues scheme.
+- **Model comparison** — Scatter: latency (ms) vs accuracy for MiniLM-L6, all-mpnet, OpenAI ada, E5-large, BGE-base; tooltips enabled.
+- **KPIs:** Best F1@5, Avg inference (ms), Embedding dim, Drift score (weekly).
 
 ---
 
@@ -189,7 +205,7 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 | World Bank API | `urllib.request`; GET; User-Agent: WB_POC_Dashboard/1.0; timeout 10–12 s |
 | Caching | `@st.cache_data(ttl=3600)` for all World Bank fetches (1 hour) |
 | Local API | `GET /api/v1/health` for status and vector_store_count (no cache) |
-| Color palette | 15+ distinct colors (cyan, purple, amber, green, red, pink, indigo, teal, orange, lime, etc.); schemes: viridis, plasma, reds, teals for heatmaps/special charts |
+| Color palette | Muted: slate, blue, grey tones (CHART_COLORS); heatmaps/metrics use blues or greys schemes. Background: light (#f5f5f5). |
 | Dependencies | streamlit, altair, pandas (altair/pandas optional but required for full analysis and colored charts) |
 
 ---
@@ -202,7 +218,7 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 4. **Growth rates** — CO₂ % change from first to last year in range, by country.  
 5. **Correlation** — GDP vs CO₂ scatter plot plus Pearson correlation.  
 6. **Composite snapshot** — Multi-indicator table by country; plus **heatmap** (country × indicator, normalized).  
-7. **Chart variety** — Bar, line, **area**, **stacked bar**, scatter, **heatmap**; rich color palette and schemes (viridis, plasma, reds, teals).  
+7. **Chart variety** — Bar, line, **area**, **stacked bar**, scatter, **heatmap**; muted palette and blues/greys schemes.  
 8. **ML & DL Analytics tab** — Training/validation curves, Precision/Recall/F1/MRR/NDCG, confusion matrix heatmap, feature importance, model comparison (accuracy vs latency).  
 9. **Caching** — 1-hour TTL to respect API and reduce latency.  
 10. **Fallback** — Graceful handling when World Bank or Altair/pandas is unavailable.  
@@ -212,10 +228,19 @@ The dashboard is an interactive Streamlit web app that combines **Document Intel
 
 ## How to Run
 
-1. Start the dashboard: run `RUN_DASHBOARD.bat` or `python -m streamlit run dashboard.py --server.port 8502`.  
-2. Open in browser: **http://localhost:8502**.  
-3. (Optional) Start the Document Intelligence API (`RUN.bat` or `python run_api.py`) so the dashboard shows “Live” and the real vector store chunk count.  
-4. For full analysis and colored charts: `pip install altair pandas` if not already installed.
+1. **Install:** `pip install -r requirements.txt` (includes streamlit, altair, pandas).  
+2. **Start:** Run `RUN_DASHBOARD.bat` or `python -m streamlit run dashboard.py --server.port 8502`.  
+3. **Open:** **http://localhost:8502**.  
+4. **(Optional)** Start the Document Intelligence API (`RUN.bat` or `python run_api.py`) so the dashboard shows “Live” and the real vector store chunk count.  
+4. **(Optional)** Start the Document Intelligence API (`RUN.bat` or `python run_api.py`) so the dashboard shows **Live** and the real vector store chunk count.  
+5. **Fallback:** If the World Bank API fails or times out, the dashboard uses built-in fallback data so all tabs still show content.
+
+## Appearance
+
+- **Background:** Light grey (`#f5f5f5`) for the main app; sidebar `#fafafa`.  
+- **Charts:** Muted palette (slate, blue, grey); heatmaps use blues or greys schemes.  
+- **Fonts:** Sora (headings), DM Sans (body); both modern and easy to read.  
+- **Metrics:** Card-style with light border and left accent.
 
 ---
 
